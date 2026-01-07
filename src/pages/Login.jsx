@@ -1,3 +1,4 @@
+import { GoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -16,7 +17,6 @@ export default function Login() {
 
   const handleLogin = () => {
     if (username === "admin" && password === "1") {
-      localStorage.setItem("loggedIn", "true");
       login({
         user: "admin",
         profilePicture:
@@ -29,36 +29,71 @@ export default function Login() {
     }
   };
 
+  // ======================
+  // LOGIN ZALO
+  // ======================
   const loginWithZalo = () => {
     window.location.href = ZALO_LOGIN_URL;
   };
 
+  // ======================
+  // LOGIN GOOGLE
+  // ======================
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const res = await fetch("http://localhost:4000/auth/google", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: credentialResponse.credential,
+      }),
+    });
+
+    const data = await res.json();
+    if (data.user) {
+      login({
+        user: data.user,
+        profilePicture: data.profilePicture,
+        id: data.id,
+        email: data.email,
+      });
+
+      localStorage.setItem("loggedIn", "true");
+      navigate("/");
+    }
+  };
+
   return (
-    <div style={{ padding: 40, display: "grid", placeItems: "center" }}>
+    <div
+      style={{ padding: 40, display: "grid", placeItems: "center", gap: 20 }}
+    >
       <h2>Login</h2>
 
       {/* Login thường */}
-      <div>
-        <input
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </div>
-      <div>
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
+      <input
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
+
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+
       <button onClick={handleLogin}>Login</button>
 
-      <hr />
-
-      {/* Login bằng ZALO */}
+      {/* Login Zalo */}
       <button onClick={loginWithZalo}>Đăng nhập bằng Zalo</button>
+
+      {/* Login Google */}
+      <GoogleLogin
+        onSuccess={handleGoogleSuccess}
+        onError={() => {
+          console.log("Google Login Failed");
+        }}
+      />
     </div>
   );
 }

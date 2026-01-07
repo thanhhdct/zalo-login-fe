@@ -3,28 +3,18 @@ import { createContext, useContext, useState } from "react";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [auth, setAuth] = useState({
-    user: null,
-    profilePicture: null,
-    id: null,
-  });
+  const [auth, setAuth] = useState({});
 
   const logout = () => {
-    setAuth({
-      user: null,
-      profilePicture: null,
-      id: null,
-    });
+    setAuth({});
   };
 
-  const login = ({ user, profilePicture, id }) => {
-    console.log("🚀 ~ login ~ id:", id);
-    console.log("🚀 ~ login ~ profilePicture:", profilePicture);
-    console.log("🚀 ~ login ~ user:", user);
+  const login = ({ user, profilePicture, id, email }) => {
     setAuth({
       user,
       profilePicture,
       id,
+      email,
     });
   };
 

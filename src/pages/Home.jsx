@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 export default function Home() {
   const { auth, logout } = useAuth();
-  const { id, user, profilePicture } = auth;
+  const { id, user, profilePicture, email } = auth;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,6 +45,7 @@ export default function Home() {
             width={80}
             height={80}
             style={{ borderRadius: "50%" }}
+            referrerPolicy="no-referrer"
           />
         )}
 
@@ -54,6 +55,9 @@ export default function Home() {
           </p>
           <p>
             <strong>Name:</strong> {user}
+          </p>
+          <p>
+            <strong>Email:</strong> {email ?? "-"}
           </p>
         </div>
       </div>
