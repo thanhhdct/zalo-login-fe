@@ -1,4 +1,4 @@
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -62,6 +62,43 @@ export default function Login() {
     }
   };
 
+  const handleGoogleCustomSuccess = async (credentialResponse) => {
+    localStorage.setItem("loggedIn", "false");
+    const res = await fetch("http://localhost:4000/auth/custom/google", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code: credentialResponse.code,
+      }),
+    });
+
+    const data = await res.json();
+    if (data.user) {
+      login({
+        user: data.user,
+        profilePicture: data.profilePicture,
+        id: data.id,
+        email: data.email,
+      });
+
+      localStorage.setItem("loggedIn", "true");
+      navigate("/");
+    }
+  };
+
+  const googleLogin = useGoogleLogin({
+    flow: "auth-code", // default
+    scope: "openid email profile",
+    onSuccess: async (tokenResponse) => {
+      handleGoogleCustomSuccess({
+        code: tokenResponse.code,
+      });
+    },
+    onError: () => {
+      console.log("Google Login Failed");
+    },
+  });
+
   return (
     <div
       style={{ padding: 40, display: "grid", placeItems: "center", gap: 20 }}
@@ -88,12 +125,43 @@ export default function Login() {
       <button onClick={loginWithZalo}>Đăng nhập bằng Zalo</button>
 
       {/* Login Google */}
-      <GoogleLogin
-        onSuccess={handleGoogleSuccess}
-        onError={() => {
-          console.log("Google Login Failed");
+      <div
+        style={{
+          borderRadius: 8,
+          overflow: "hidden",
+          boxShadow: "0 4px 10px rgba(0,0,0,.15)",
+          width: 260,
         }}
-      />
+      >
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => {
+            console.log("Google Login Failed");
+          }}
+        />
+      </div>
+      <button
+        onClick={() => googleLogin()}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "10px 16px",
+          borderRadius: 8,
+          border: "1px solid #ddd",
+          background: "#fff",
+          cursor: "pointer",
+          fontWeight: 500,
+        }}
+      >
+        <img
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSiEndPkpxU-FDOQK0acJ6iuFECTI914xOelQ&s"
+          alt="google"
+          width={20}
+          height={20}
+        />
+        Google
+      </button>
     </div>
   );
 }
